@@ -22,3 +22,12 @@ variable "instance_count" {
 variable "instance_owner" {
   type = string
 }
+
+variable "bucket_name" {
+  type = string
+}
+
+variable "tags" {
+  type    = map(string)
+  default = {}
+}
