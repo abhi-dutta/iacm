@@ -12,6 +12,7 @@ resource "aws_instance" "ec2" {
   tags = {
     name  = "ec2-${count.index}"
     owner = var.instance_owner
+    ttl   = "-1"
   }
 }
 
