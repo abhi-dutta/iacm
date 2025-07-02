@@ -1,6 +1,6 @@
 // AWS
 instance_ami   = "ami-04e5276ebb8451442"
-instance_type  = "t2.micro"
+instance_type  = "t3.micro"
 instance_count = 3
 instance_owner = "SEDemo"
 vpc_id         = "vpc-026d67b6761d5179d"
