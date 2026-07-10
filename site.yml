@@ -1,0 +1,33 @@
+---
+# Single-file playbook for Harness IaCM (IACMAnsiblePlugin step).
+# Store in Git -> register as a Playbook in Harness -> select it in the step.
+# `hosts:` must match a GROUP name defined in your Harness inventory.
+
+- name: Provision web service on EC2
+  hosts: ec2
+  become: true
+
+  tasks:
+    - name: Enable nginx (Amazon Linux 2 only; no-op elsewhere)
+      ansible.builtin.command: amazon-linux-extras enable nginx1
+      changed_when: false
+      when:
+        - ansible_distribution == "Amazon"
+        - ansible_distribution_major_version == "2"
+
+    - name: Install nginx
+      ansible.builtin.package:
+        name: nginx
+        state: present
+
+    - name: Start and enable nginx
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: true
+
+    - name: Deploy landing page
+      ansible.builtin.copy:
+        dest: /usr/share/nginx/html/index.html
+        content: "<h1>Provisioned by Ansible via Harness IaCM on {{ inventory_hostname }}</h1>\n"
+        mode: "0644"
