@@ -1,6 +1,6 @@
 //Define the provider and any data sources
 provider "aws" {
-  region = "us-east-1"
+  region = "ap-south-1"
 }
 
 // AWS VPC
