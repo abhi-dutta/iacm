@@ -1,0 +1,37 @@
+- name: CIS Level 1 Hardening
+  hosts: all
+  become: yes
+  tasks:
+    - name: Ensure permissions on /etc/passwd are configured
+      file:
+        path: /etc/passwd
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Ensure SSH root login is disabled
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^PermitRootLogin'
+        line: 'PermitRootLogin no'
+        state: present
+      notify: Restart SSH
+
+    - name: Ensure password expiration is 90 days or less
+      lineinfile:
+        path: /etc/login.defs
+        regexp: '^PASS_MAX_DAYS'
+        line: 'PASS_MAX_DAYS   90'
+
+    - name: Ensure core dumps are restricted
+      sysctl:
+        name: fs.suid_dumpable
+        value: '0'
+        state: present
+        reload: yes
+
+  handlers:
+    - name: Restart SSH
+      service:
+        name: sshd
+        state: restarted
