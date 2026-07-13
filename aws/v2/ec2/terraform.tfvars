@@ -6,3 +6,5 @@ instance_owner = "SEDemo"
 vpc_id         = "vpc-026d67b6761d5179d"
 subnet_id      = "subnet-046a0ecdba6d3ba38" // Private A
 //subnet_id = "subnet-0bad698e6f202dec3" // Private B
+// ADDED: the key pair name from step 1
+key_name = "harness-ansible"
