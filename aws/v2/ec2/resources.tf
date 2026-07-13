@@ -8,6 +8,9 @@ resource "aws_instance" "ec2" {
   ami           = var.instance_ami
   count         = var.instance_count
 
+# 🔑 ADD THIS LINE HERE:
+  key_name      = "harness-ansible"
+
   subnet_id = data.aws_subnet.selected.id
   tags = {
     name  = "ec2-${count.index}"
