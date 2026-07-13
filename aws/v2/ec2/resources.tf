@@ -9,6 +9,7 @@ resource "aws_instance" "ec2" {
   count         = var.instance_count
 
   subnet_id = data.aws_subnet.selected.id
+  key_name  = var.key_name // <-- ADDED: authorizes this key pair on the instance at launch
   tags = {
     name  = "ec2-${count.index}"
     owner = var.instance_owner
