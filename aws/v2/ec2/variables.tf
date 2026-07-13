@@ -31,3 +31,8 @@ variable "tags" {
   type    = map(string)
   default = {}
 }
+
+// ADDED: name of the EC2 key pair created in step 1 (must exist in ap-south-1).
+variable "key_name" {
+  type = string
+}
