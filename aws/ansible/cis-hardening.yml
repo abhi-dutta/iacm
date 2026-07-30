@@ -35,3 +35,109 @@
       service:
         name: sshd
         state: restarted
+
+# =============================================================
+# Play 2: Tomcat Application Server Setup
+# =============================================================
+- name: Install and Configure Tomcat
+  hosts: all
+  become: yes
+  vars:
+    tomcat_version: "9.0.83"
+    tomcat_url: "https://archive.apache.org/dist/tomcat/tomcat-9/v{{ tomcat_version }}/bin/apache-tomcat-{{ tomcat_version }}.tar.gz"
+
+  tasks:
+    # 1. Install Java based on Linux distribution family
+    - name: Install Java (Amazon Linux / RHEL)
+      yum:
+        name: java-11-amazon-corretto
+        state: present
+      when: ansible_os_family == "RedHat"
+
+    - name: Install Java (Ubuntu / Debian)
+      apt:
+        name: default-jdk
+        state: present
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+
+    # 2. Service User Setup
+    - name: Create tomcat group
+      group:
+        name: tomcat
+        state: present
+
+    - name: Create tomcat user
+      user:
+        name: tomcat
+        group: tomcat
+        home: /opt/tomcat
+        shell: /bin/false
+        system: yes
+
+    # 3. Tomcat Binary Download & Extraction
+    - name: Create Tomcat installation directory
+      file:
+        path: /opt/tomcat
+        state: directory
+        owner: tomcat
+        group: tomcat
+        mode: '0755'
+
+    - name: Download Tomcat package
+      get_url:
+        url: "{{ tomcat_url }}"
+        dest: /tmp/apache-tomcat.tar.gz
+
+    - name: Extract Tomcat binaries
+      unarchive:
+        src: /tmp/apache-tomcat.tar.gz
+        dest: /opt/tomcat
+        remote_src: yes
+        extra_opts: [--strip-components=1]
+        owner: tomcat
+        group: tomcat
+
+    - name: Set execute permissions on binary scripts
+      file:
+        path: /opt/tomcat/bin
+        mode: 'a+x'
+        recurse: yes
+
+    # 4. Systemd Management Setup
+    - name: Create Tomcat systemd unit file
+      copy:
+        dest: /etc/systemd/system/tomcat.service
+        content: |
+          [Unit]
+          Description=Apache Tomcat Web Application Container
+          After=network.target
+
+          [Service]
+          Type=forking
+          User=tomcat
+          Group=tomcat
+          Environment="JAVA_OPTS=-Djava.security.egd=file:///dev/urandom -Djava.awt.headless=true"
+          Environment="CATALINA_BASE=/opt/tomcat"
+          Environment="CATALINA_HOME=/opt/tomcat"
+          Environment="CATALINA_PID=/opt/tomcat/temp/tomcat.pid"
+          Environment="CATALINA_OPTS=-Xms512M -Xmx1024M -server -XX:+UseParallelGC"
+          ExecStart=/opt/tomcat/bin/startup.sh
+          ExecStop=/opt/tomcat/bin/shutdown.sh
+
+          [Install]
+          WantedBy=multi-user.target
+        mode: '0644'
+        owner: root
+        group: root
+
+    # 5. Start and Enable Service
+    - name: Reload systemd manager configuration
+      systemd:
+        daemon_reload: yes
+
+    - name: Ensure Tomcat is running and enabled on boot
+      systemd:
+        name: tomcat
+        state: started
+        enabled: yes
