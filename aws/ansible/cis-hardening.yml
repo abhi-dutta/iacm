@@ -136,8 +136,8 @@
       systemd:
         daemon_reload: yes
 
-    - name: Ensure Tomcat is running and enabled on boot
-      systemd:
-        name: tomcat
-        state: started
-        enabled: yes
+   # - name: Ensure Tomcat is running and enabled on boot
+   #   systemd:
+     #   name: tomcat
+  #      state: started
+    #    enabled: yes
